@@ -1,0 +1,9 @@
+name: NaruseDiscoveryDemoEx
+instances: 1
+memory: 256M
+command: npm start
+services:
+  - WDS-Test-for-Tech-Support-Toda
+env:
+  DEMO_DEPLOY: 1
+
