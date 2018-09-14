@@ -1,18 +1,18 @@
 version: '2'
 template:
-  name: "Watson Discovery Service News Demo"
-  description: "A demo designed to get developers started using the Watson Discovery Service with news data"
+  name: "Watson Discovery Demo Ex"
+  description: "Watson Discoveryのニュースデータを利用するデモです。"
   header: '![](toolchain.svg)'
   required:
     - sample-build
     - sample-repo
   info:
     git url: >-
-      [https://github.com/watson-developer-cloud/discovery-nodejs](https://github.com/watson-developer-cloud/discovery-nodejs)
+      [https://github.com/softbank-developer/discovery-nodejs-demo](https://github.com/softbank-developer/discovery-nodejs-demo)
     git branch: >-
-      [master](https://github.com/watson-developer-cloud/discovery-nodejs/tree/master)
+      [master](https://github.com/softbank-developer/discovery-nodejs-demo/tree/master)
 toolchain:
-  name: 'watson-discovery-service-news-demo-{{timestamp}}'
+  name: 'discovery-demo-ex-{{timestamp}}'
   template:
     getting_started: |-
       **Your toolchain is ready!**
@@ -23,7 +23,7 @@ services:
     service_id: hostedgit
     parameters:
       repo_name: '{{toolchain.name}}'
-      repo_url: 'https://github.com/watson-developer-cloud/discovery-nodejs'
+      repo_url: 'https://github.com/softbank-developer/discovery-nodejs-demo'
       type: clone
       has_issues: true
       enable_traceability: true
