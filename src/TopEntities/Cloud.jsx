@@ -1,6 +1,6 @@
 import React from 'react';
 import { string, number, shape, arrayOf } from 'prop-types';
-import { Icon, Label, Menu } from 'semantic-ui-react'
+//import { Icon, Label, Menu } from 'semantic-ui-react'
 
 
 function Cloud({ data, maxSize, minSize, onShowLinks, CType }) {
@@ -28,14 +28,14 @@ function Cloud({ data, maxSize, minSize, onShowLinks, CType }) {
                   fontSize: "18px",
                 }}
               >
-			  <Menu>
-			    <Menu.Item as='a'
+			  <div>
+			    <div as='a'
 			      onClick={() => onShowLinks(CType,`${item.key}`)}
 				>
 					{item.key}
-				  <Label circular color='teal' key='teal'>{item.matching_results}</Label>
-				</Menu.Item>
-			  </Menu>
+				  <div circular color='teal' key='teal'>{item.matching_results}</div>
+				</div>
+			  </div>
               </div>
             ),
           )
