@@ -34,7 +34,7 @@ stages:
     value: 512M
     type: text
   - name: DISCOVERY_SERVICE_NAME
-    value: ''
+    value: Discovery-Demo 
     type: text
   - name: TEMP_APP_NAME
     value: ''
@@ -61,7 +61,8 @@ stages:
       # create services that do not exist
 
       if ! cf service ${DISCOVERY_SERVICE_NAME} ; then
-        cf create-service discovery standard ${DISCOVERY_SERVICE_NAME}
+      #cf create-service discovery standard ${DISCOVERY_SERVICE_NAME}
+        cf create-service discovery light ${DISCOVERY_SERVICE_NAME}
       fi
 
       # Compute a unique app name using the reserved CF_APP name (configured in the
