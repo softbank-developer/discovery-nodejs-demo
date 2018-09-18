@@ -43,6 +43,9 @@
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "recharts": "^0.20.2",
+    "semantic-ui-css": "^2.4.0",
+    "semantic-ui-react": "^0.81.3",
+    "vcap_services": "^0.5.1",
     "watson-developer-cloud": "^3.7.0",
     "watson-react-components": "^0.6.9"
   },

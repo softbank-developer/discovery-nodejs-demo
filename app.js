@@ -1,9 +1,24 @@
+const vcapServices = require('vcap_services');
 const queryBuilder = require('./src/query-builder');
 
 const NEWS_ENVIRONMENT_ID = 'system';
 const NEWS_COLLECTION_ID = 'news';
 
 const DiscoveryV1 = require('watson-developer-cloud/discovery/v1');
+
+let creds;
+if ( process.env.VCAP_SERVICES ) {
+	const services = JSON.parse(process.env.VCAP_SERVICES);
+	console.log( services )
+	creds = services["discovery"][0]["credentials"]
+}
+else {
+	creds = {
+		username: null,
+		password: null,
+	}
+}
+console.log( creds )
 
 let discovery;
 
@@ -17,8 +32,8 @@ if (process.env.DISCOVERY_IAM_APIKEY && process.env.DISCOVERY_IAM_APIKEY !== '')
 } else {
   discovery = new DiscoveryV1({
     version: '2017-08-01',
-    username: process.env.DISCOVERY_USERNAME || '<username>',
-    password: process.env.DISCOVERY_PASSWORD || '<password>',
+    username: creds["username"] || process.env.DISCOVERY_USERNAME || '<username>',
+    password: creds["password"] || process.env.DISCOVERY_PASSWORD || '<password>',
     url: process.env.DISCOVERY_URL || 'https://gateway.watsonplatform.net/discovery/api',
   });
 }

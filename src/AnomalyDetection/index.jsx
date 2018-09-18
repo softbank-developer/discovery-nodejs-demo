@@ -77,7 +77,6 @@ export default class AnomalyDetection extends Component {
 
   render() {
     const { query, anomalyData, colorLine } = this.props;
-	console.log( "ANOMA", anomalyData[51] )
     return (
       <div>
         {
@@ -89,10 +88,6 @@ export default class AnomalyDetection extends Component {
                   description={AnomalyDetection.widgetDescription()}
                   onShowQuery={this.onShowQuery}
                 />
-				<SubStories
-					query={this.props.query}
-					data={anomalyData}
-				/>
                 {
                   anomalyData.length > 0
                     ? (
@@ -175,6 +170,10 @@ export default class AnomalyDetection extends Component {
                       />
                     )
                 }
+				<SubStories
+					query={this.props.query}
+					data={anomalyData}
+				/>
               </div>
             )
             : (

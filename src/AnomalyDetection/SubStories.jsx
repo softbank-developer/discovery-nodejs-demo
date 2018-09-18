@@ -1,21 +1,52 @@
-import React from 'react';
+import React, {Component} from 'react';
 import moment from 'moment';
 import { string, number } from 'prop-types';
 
 const ISO_8601 = 'YYYY-MM-DDThh:mm:ssZZ';
 
-function SubStories({ data, query }) {
+const parseQueryResults = (data) => {
+  var res = [];
+  data.results.map( ( result, idx ) => {
+	const parsedData = {
+		title: result.title,
+		url: result.url,
+		host: result.host,
+		date: result.crawl_date,
+	};
+	res.push( parsedData )
+  });
+  return res;
+};
 
-  const getLinks = (p,p_query) => {
-        console.log( "SubStories getLinks", p )
+class SubStories extends Component {
+//({ data, query }) {
+
+  constructor(props) {
+    super(props)
+  
+    this.state = { 
+          data: [],
+    }   
+
+    this.getLinks = this.getLinks.bind(this)
+    this.iter_slice = this.iter_slice.bind(this)
+  }
+
+	componentDidMount() {
+		this.iter_slice(this.props.data, this.props.query)
+		//this.setState( { mentions: this.getData() } )
+	}
+
+  getLinks = (p,p_query) => {
+        console.log( "Anomary SubStories getLinks", p )
 		console.log( moment(p) )
-		console.log(p_query.text)
-        //this.setState({ query, loading: true, error: null, data: null });
+		console.log(p_query)
         const f0 = "crawl_date>" + moment(p).add('days', -1).format(ISO_8601) +
-               ",crawl_date<" + moment(p).format(ISO_8601);
+               ",crawl_date<" + moment(p).add('days', 1).format(ISO_8601);
         const query = { 
                 query: p_query.text,
                 filter: f0,
+				sort: "crawl_date",
                 count: 3,
         }       
 		console.log( ">>", query )
@@ -31,7 +62,12 @@ function SubStories({ data, query }) {
             if (response.ok) {
                 response.json().then((json) => {
 				  console.log( "ANOMALY", json)
-                //this.setState({ loading: false, data: parseQueryResults(json) });
+				  var tmp_data = this.state.data
+				  var res_json = parseQueryResults(json)
+				  res_json["index_date"] = moment(p).format(ISO_8601)
+				  tmp_data.push( res_json )
+				  this.setState({ loading: false, data: tmp_data });
+				  return 
                 });
             } else {
                 response.json()
@@ -45,18 +81,27 @@ function SubStories({ data, query }) {
     });     
   } 
 
-  const ff = (data, query) => {
+  iter_slice = (data, query) => {
+	console.log( 'FF -----------' )
+	console.log( query )
+    this.setState({ query, loading: true, error: null, data: [] });
 	var res = []
-	data.map( (item,idx) => {
+	data.sort( ( a, b ) => {
+		return a.key - b.key
+	})
+    .map( (item,idx) => {
       if ( item.anomaly ) {
 		var xrange = item.key_as_string.substring(0,10)
-	    console.log(item.key_as_string)
+		var xrange = item.key
 
-		getLinks( xrange, query  )
-		res.push( { url: "A", date:item.key_as_string, title: xrange, host: "C", label: "D", score: 1.0 } )
+	    console.log( "########" )
+		console.log( item )
+	    console.log( idx, xrange)
+		this.getLinks( xrange, query )
+		//res.push( { url: "A", date:item.key_as_string, title: xrange, host: "C", label: "D", score: 1.0 } )
 	  }
 	})
-	return res
+	return
 	//{ url:url, date:"", title:"hello", host:"yahoo", label:"", score:"" },
 	//{ url:url, date:"", title:"world", host:"google", label:"", score:"" }
   }
@@ -66,44 +111,43 @@ function SubStories({ data, query }) {
  // })
 
   //const [ anomas ] = ff(data)
-  var anomas = ff(data, query)
-  console.log( anomas )
-  return (
+		//
+  render() {
+    //const { data } = this.state
+	const query = this.props.query
+    return (
         <div className="substory">
 		{
-		  anomas.map( item =>
-		  (
-		  <div>
-          <div className="story--source-and-score">
-            <span className="base--p story--source">
-              { item.host }
-            </span>
-            <span className="story--source-score-divider"> | </span>
-            <span className="story--score base--p">
-		      <span>Label: { item.label }</span>
-            </span>
-            <span className="story--source-score-divider"> | </span>
-            <span className="story--score base--p">
-              <span>Score: { item.score }</span>
-            </span>
-          </div>
-          <a
-            className="substory--title base--a results--a"
-            href={item.url}
-            target="_blank"
-            title={item.title}
-            rel="noopener noreferrer"
-          >
-          {item.title}
-          </a>
-          <div className="story--date">
-            { moment(item.date).format('M/D/YYYY hh:MMa') }
-          </div>
-		  </div>
-	      ))
+		  this.state.data.map(item1 =>
+		  {
+			return (
+			  <div>
+			  { item1.index_date }
+			  {
+			  item1.map( item =>
+		      {
+			    return (
+		          <div>
+                    <div className="story--source-and-score">
+                      <span className="story--date"> { moment(item.date).format('M/D/YYYY hh:MMa') } </span>
+			          <span className="story--source-score-divider"> | </span>
+                      <span className="base--p story--source"> { item.host } </span>
+                    </div>
+                    <a className="substory--title base--a results--a" href={item.url} target="_blank" title={item.title} rel="noopener noreferrer" >
+                    {item.title} </a>
+		          </div>
+		        )
+			  }
+			  )
+			}
+			</div>
+			)
+		  }
+		  )
 		}
 	    </div>
   );
+}
 }
 
 SubStories.propTypes = {

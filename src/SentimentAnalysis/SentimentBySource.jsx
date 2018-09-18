@@ -1,8 +1,7 @@
 import React, {Component} from 'react';
 import { string, shape, arrayOf } from 'prop-types';
 import SentimentChart from './SentimentChart';
-//import { Accordion, Icon } from 'semantic-ui-react'
-import Accordion from '../Accordion/index';
+import { Accordion, Icon } from 'semantic-ui-react'
 import SubStory from './SubStory';
 import moment from 'moment';
 
@@ -102,7 +101,7 @@ class SentimentBySource extends Component {
                 >
 				  <Accordion>
 				    <Accordion.Title active={activeIndex == idx} index={idx} onClick={this.handleClick}>
-					  <div name='dropdown' />
+					  <Icon name='dropdown' />
 					  { source.key }
 					</Accordion.Title>
 					<Accordion.Content active={activeIndex === idx}>
