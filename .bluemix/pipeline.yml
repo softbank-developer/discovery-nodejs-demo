@@ -14,7 +14,6 @@ stages:
     build_type: npm
     script: |
       #!/bin/bash
-      npm install gulp
       export PATH=/opt/IBM/node-v6.7.0/bin:$PATH
       npm install
       npm run build
@@ -62,7 +61,7 @@ stages:
 
       if ! cf service ${DISCOVERY_SERVICE_NAME} ; then
       #cf create-service discovery standard ${DISCOVERY_SERVICE_NAME}
-        cf create-service discovery light ${DISCOVERY_SERVICE_NAME}
+        cf create-service discovery lite ${DISCOVERY_SERVICE_NAME}
       fi
 
       # Compute a unique app name using the reserved CF_APP name (configured in the
