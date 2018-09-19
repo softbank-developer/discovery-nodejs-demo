@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import moment from 'moment';
 import { string, number } from 'prop-types';
+import { Accordion, Icon } from 'semantic-ui-react'
 
 const ISO_8601 = 'YYYY-MM-DDThh:mm:ssZZ';
 
@@ -8,6 +9,7 @@ const parseQueryResults = (data) => {
   var res = [];
   data.results.map( ( result, idx ) => {
 	const parsedData = {
+		id: result.id,
 		title: result.title,
 		url: result.url,
 		host: result.host,
@@ -25,7 +27,8 @@ class SubStories extends Component {
     super(props)
   
     this.state = { 
-          data: [],
+		activeIndex: -1,
+        data: [],
     }   
 
     this.getLinks = this.getLinks.bind(this)
@@ -41,13 +44,15 @@ class SubStories extends Component {
         console.log( "Anomary SubStories getLinks", p )
 		console.log( moment(p) )
 		console.log(p_query)
-        const f0 = "crawl_date>" + moment(p).add('days', -1).format(ISO_8601) +
-               ",crawl_date<" + moment(p).add('days', 1).format(ISO_8601);
+        //const f0 = "crawl_date>" + moment(p).add('days', 0).add('hours',-4).format(ISO_8601) +
+        //       ",crawl_date<" + moment(p).add('days', 1).add('hours', 11).format(ISO_8601);
+        const f0 = "crawl_date>" + moment(p).add('days', 0).hours(12).minutes(0).seconds(0).millisecond(0).format(ISO_8601) +
+               ",crawl_date<" + moment(p).add('days', 1).hours(12).minutes(0).seconds(0).millisecond(0).format(ISO_8601);
         const query = { 
                 query: p_query.text,
                 filter: f0,
 				sort: "crawl_date",
-                count: 3,
+                count: 5,
         }       
 		console.log( ">>", query )
         
@@ -86,10 +91,17 @@ class SubStories extends Component {
 	console.log( query )
     this.setState({ query, loading: true, error: null, data: [] });
 	var res = []
-	data.sort( ( a, b ) => {
-		return a.key - b.key
+	var data2 = data.sort( ( a, b ) => {
+		if ( a.key < b.key ) {
+		  return -1
+		}
+		if ( a.key > b.key ) {
+		  return 1
+		}
+		return 0
 	})
-    .map( (item,idx) => {
+	console.log( data2 )
+    data2.map( (item,idx) => {
       if ( item.anomaly ) {
 		var xrange = item.key_as_string.substring(0,10)
 		var xrange = item.key
@@ -102,32 +114,56 @@ class SubStories extends Component {
 	  }
 	})
 	return
-	//{ url:url, date:"", title:"hello", host:"yahoo", label:"", score:"" },
-	//{ url:url, date:"", title:"world", host:"google", label:"", score:"" }
   }
 
-  //anomalyData.map( (item,idx) => {
-//	console.log(item)
- // })
 
-  //const [ anomas ] = ff(data)
-		//
+  handleClick = (e, titleProps) => {
+    const { index } = titleProps
+    console.log( "CLICK", index )
+    const { activeIndex } = this.state
+    const newIndex = activeIndex === index ? -1 : index
+    this.setState({ activeIndex: newIndex })
+  }
+		
   render() {
     //const { data } = this.state
+	const { activeIndex } = this.state
 	const query = this.props.query
     return (
         <div className="substory">
 		{
-		  this.state.data.map(item1 =>
+		  this.state.data.sort( (x,y) => {
+		    if ( x.index_date < y.index_date ) {
+				return -1
+			}
+		    if ( x.index_date > y.index_date ) {
+				return 1
+			}
+			return 0
+		  })
+		  .map( (item1,idx1) =>
 		  {
 			return (
-			  <div>
-			  { item1.index_date }
+			  <div key={item1.index_date}>
+			  <Accordion>
+			  <Accordion.Title active={activeIndex == idx1} index={idx1} onClick={this.handleClick}>
+			  <Icon name='dropdown' />
+			  { item1.index_date.substring(0,10) }
+			  </Accordion.Title>
+			  <Accordion.Content active={activeIndex === idx1}>
 			  {
-			  item1.map( item =>
-		      {
+			    item1.sort( (a,b) => {
+				  if ( moment(a.date).isBefore(b.date) ) {
+				  return 1
+				  }
+				  if ( moment(a.date).isAfter(b.date) ) {
+				  return -1
+				  }
+				  return 0
+			    })
+			    .map( item => {
 			    return (
-		          <div>
+		          <div key={item.id}>
                     <div className="story--source-and-score">
                       <span className="story--date"> { moment(item.date).format('M/D/YYYY hh:MMa') } </span>
 			          <span className="story--source-score-divider"> | </span>
@@ -140,6 +176,8 @@ class SubStories extends Component {
 			  }
 			  )
 			}
+			</Accordion.Content>
+			</Accordion>
 			</div>
 			)
 		  }
@@ -151,11 +189,7 @@ class SubStories extends Component {
 }
 
 SubStories.propTypes = {
-  date: string.isRequired,
   host: string,
-  score: number.isRequired,
-  title: string.isRequired,
-  url: string.isRequired,
 };
 
 SubStories.defaultProps = {

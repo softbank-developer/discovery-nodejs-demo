@@ -92,23 +92,6 @@ export default class AnomalyDetection extends Component {
                   anomalyData.length > 0
                     ? (
                       <div className="anomaly-chart-container--div">
-					    <div>
-							{
-							  anomalyData.map( (item,idx) => {
-							    if ( item.anomaly ) {
-								  return (
-								    <div>
-								      { idx },
-								      { item.key_as_string.substring( 0, 10 ) }
-									  #
-								      {item.matching_results}
-								      <br/> {item.aggregations[0].results[0].aggregations[0].results[0].key}
-                                    </div>
-							      );
-								}
-							  })
-							}
-						</div>
                         <ResponsiveContainer
                           height={250}
                         >
