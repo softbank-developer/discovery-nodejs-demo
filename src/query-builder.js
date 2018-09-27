@@ -1,4 +1,4 @@
-const moment = require('moment');
+// const moment = require('moment');
 const { fields } = require('./fields');
 const TopStoriesQuery = require('./TopStories/query');
 const TopEntitiesQuery = require('./TopEntities/query');
@@ -7,7 +7,11 @@ const MentionsAndSentimentsQuery = require('./MentionsAndSentiments/query');
 const AnomalyDetectionQuery = require('./AnomalyDetection/query');
 
 // ISO 8601 date format accepted by the service
-const ISO_8601 = 'YYYY-MM-DDThh:mm:ssZZ';
+// const ISO_8601 = 'YYYY-MM-DDThh:mm:ssZZ';
+
+function date_format(p) {
+  return ( p.substr(0, 4) + "-" + p.substr(4,2) + "-" + p.substr(6,2) + "T00:00:00Z" );
+}
 
 module.exports = {
   widgetQueries: {
@@ -18,17 +22,20 @@ module.exports = {
     anomalyDetection: AnomalyDetectionQuery,
   },
   build(query, widgetQuery) {
+    // console.log( "### QUERY BUILDER BUILD", query, widgetQuery )
     const params = {
       query: `"${query.text}"`,
     };
-    params.filter = `${fields.language}:(english|en)`;
+    // params.filter = `${fields.language}:(english|en)`;
+
+    // `${fields.publication_date}>${moment(query.date.from).add('hours',-12).format(ISO_8601)}`,
     if (query.date) {
       params.filter = [
-        params.filter,
-        `${fields.publication_date}>${moment(query.date.from).format(ISO_8601)}`,
-        `${fields.publication_date}<${moment(query.date.to).format(ISO_8601)}`,
+        `${fields.publication_date}>${date_format(query.date.from)}`,
+        `${fields.publication_date}<${date_format(query.date.to)}`,
       ].join(',');
     }
+    // console.log( "PARAMS FILTER", params.filter )
     if (widgetQuery) {
       return Object.assign({}, params, widgetQuery);
     }

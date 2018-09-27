@@ -1,8 +1,8 @@
 const { fields } = require('../fields');
 
-const companiesAgg = [
+const organizationsAgg = [
   `nested(${fields.title_entity})`,
-  `filter(${fields.title_entity_type}:Company)`,
+  `filter(${fields.title_entity_type}:Organization)`,
   `term(${fields.title_entity_text})`,
 ].join('.');
 const peopleAgg = [
@@ -13,5 +13,5 @@ const peopleAgg = [
 const conceptAgg = `term(${fields.title_concept_text})`;
 
 module.exports = {
-  aggregations: [companiesAgg, peopleAgg, conceptAgg],
+  aggregations: [organizationsAgg, peopleAgg, conceptAgg],
 };

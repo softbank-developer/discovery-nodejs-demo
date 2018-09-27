@@ -4,6 +4,7 @@ module.exports.fields = {
   host: 'host',
   publication_date: 'crawl_date',
   language: 'language',
+  score: 'result_metadata.score',
   title_entity: 'enriched_title.entities',
   title_entity_text: 'enriched_title.entities.text',
   title_entity_type: 'enriched_title.entities.type',

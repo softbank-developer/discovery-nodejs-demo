@@ -20,7 +20,9 @@ import { getNames, getItemsForName } from './mentionsParser';
 import capitalize from './capitalize';
 import SubStory from './SubStory';
 
-const ISO_8601 = 'YYYY-MM-DDThh:mm:ssZZ';
+function date_format(p) {
+  return ( p.substr(0, 4) + "-" + p.substr(4,2) + "-" + p.substr(6,2) + "T00:00:00Z" )
+}
 
 const parseQueryResults = (data) => {
   const parsedData = {
@@ -35,89 +37,7 @@ const parseQueryResults = (data) => {
 };
 
 
-
 export default class MentionsAndSentiments extends Component {
-
-  constructor(props) {
-	super(props);
-
-    this.state = {
-      showQuery: false,
-	  mentions: [],
-	  data: [ null, null, null, null ]
-    }
-	this.dummy = this.dummy.bind(this)
-  }
-
-  getInitialState() {
-    // インスタンス作成のたびに呼ばれる
-    console.log("getInitialState");
-    return {temp: "EMPTY"};
-  }
-
-  componentDidMount() {
-    // 描画が成功して、DOMにアクセス可能になる
-    console.log("componentDidMount");
-    this.setState( { mentions: this.getData() } )
-  }
-
-  dummy(index, name) {
-    const item_name = name
-	console.log( "getLinks", index, item_name )
-	console.log( this.props.query.date )
-	console.log( this.state )
-	var tmp_data = this.state.data
-	tmp_data[index] = null
-    this.setState({ query, loading: true, error: null, data: tmp_data}); 
-	const f0 = "crawl_date>" + moment(this.props.query.date.from).format(ISO_8601) + 
-			   ",crawl_date<" + moment(this.props.query.date.to).format(ISO_8601);
-	const f1 = "enriched_title.entities.text::\"" + item_name + "\""
-	const f2 = "enriched_title.entities.type::Company"
-    const query = { 
-			    query: this.props.query.text,
-                filter: f0 + "," + f1 + "," + f2,
-			    sort: "crawl_date",
-                count: 3,
-    }   
-    const host = process.env.REACT_APP_SERVER || ''; 
-    fetch(`${host}/api/query2`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(query),
-    }).then((response) => {
-      if (response.ok) {
-        response.json().then((json) => {
-                  console.log(json)
-		  tmp_data[index] = parseQueryResults(json)
-          this.setState({ loading: false, data: tmp_data }); 
-        }); 
-      } else {
-        response.json().then((error) => {
-          this.setState({ error, loading: false }); 
-        }).catch(() => {
-          this.setState({
-            error: {
-              error: 'There was a problem with the request, please try again',
-            },  
-            loading: false,
-          }); 
-        }); 
-      }   
-    }); 
-  }
-
-  static calculateMentionCount(data) {
-    return data.reduce((acc, item) => acc + item.positive + item.neutral + item.negative, 0);
-  }
-
-  static widgetTitle() {
-    return 'Co-Mentions & Trends';
-  }
-
-  static widgetDescription() {
-    return 'Discovery can identify frequently co-mentioned entities and follow trends in sentiment.';
-  }
-
   static propTypes = {
     mentions: shape({
       aggregations: arrayOf(shape({
@@ -148,6 +68,39 @@ export default class MentionsAndSentiments extends Component {
   }
 
 
+  static calculateMentionCount(data) {
+    return data.reduce((acc, item) => acc + item.positive + item.neutral + item.negative, 0);
+  }
+
+  static widgetTitle() {
+    return 'Co-Mentions & Trends';
+  }
+
+  static widgetDescription() {
+    return 'Discovery can identify frequently co-mentioned entities and follow trends in sentiment.';
+  }
+
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      showQuery: false,
+      mentions: [],
+      data: [null, null, null, null],
+    };
+    this.getLinks = this.getLinks.bind(this);
+  }
+
+  getInitialState() {
+    // インスタンス作成のたびに呼ばれる
+    return { temp: 'EMPTY' };
+  }
+
+  componentDidMount() {
+    // 描画が成功して、DOMにアクセス可能になる
+    this.setState({ mentions: this.getData() })
+  }
+
   onShowQuery = () => {
     this.setState({ showQuery: true });
   }
@@ -156,17 +109,55 @@ export default class MentionsAndSentiments extends Component {
     this.setState({ showQuery: false });
   }
 
+  getLinks(index, name) {
+    const item_name = name;
+    let tmp_data = this.state.data;
+    tmp_data[index] = null;
+    this.setState({ loading: true, error: null, data: tmp_data });
+    const f0 = 'crawl_date>' + date_format(this.props.query.date.from) +
+               ',crawl_date<' + date_format(this.props.query.date.to);
+    const f1 = 'enriched_title.entities.text::"' + item_name + '"';
+    const f2 = 'enriched_title.entities.type::Organization';
+    const query = {
+      query: this.props.query.text,
+      filter: f0 + ',' + f1 + ',' + f2,
+      sort: 'crawl_date',
+      deduplicate: true,
+      count: 3,
+    };
+    const host = process.env.REACT_APP_SERVER || '';
+    fetch(`${host}/api/query2`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(query),
+    }).then((response) => {
+      if (response.ok) {
+        response.json().then((json) => {
+          tmp_data[index] = parseQueryResults(json);
+          this.setState({ loading: false, data: tmp_data });
+        });
+      } else {
+        response.json().then((error) => {
+          this.setState({ error, loading: false });
+        }).catch(() => {
+          this.setState({
+            error: {
+              error: 'There was a problem with the request, please try again',
+            },
+            loading: false,
+          });
+        });
+      }
+    });
+  }
 
 
   getData() {
-	console.log( 'getData' )
     const { mentions, query } = this.props;
-
-    console.log( ">>", mentions )
 
     let mentionsData = getNames(mentions.aggregations[0].results)
       .filter(name => !(new RegExp(query.text, 'gi').test(name))) // filter out a mention that matches the query text input
-      .filter(name => /^[A-Z]/.test(name)) // check if name is capitalized (to ensure a brand is used)
+      // .filter(name => /^[A-Z]/.test(name)) // check if name is capitalized (to ensure a brand is used)
       .map((name, i) => ({
         name,
         toggle: i === 0,
@@ -180,16 +171,11 @@ export default class MentionsAndSentiments extends Component {
           })),
       }));
 
-
-    mentionsData = mentionsData.map( mention => Object.assign({}, mention, {
+    mentionsData = mentionsData.map((mention) => Object.assign({}, mention, {
       totalMentions: MentionsAndSentiments.calculateMentionCount(mention.data),
-    }))
-      .sort((a, b) => b.totalMentions - a.totalMentions)
-      .filter((name, i) => { return i < 4 });
+    })).sort((a, b) => b.totalMentions - a.totalMentions).filter((name, i) => { return i < 4; });
 
-    
-	//this.getLinks( mentionsData[0].name )
-
+    // this.getLinks( mentionsData[0].name )
     // calculate sentiments
     mentionsData = mentionsData.map((item) => {
       // sum up all the negatives, positives, and neutrals
@@ -214,17 +200,18 @@ export default class MentionsAndSentiments extends Component {
       return newItem;
     });
 
-	this.dummy(0, mentionsData[0].name)
+    if (mentionsData.length > 0) {
+      this.getLinks(0, mentionsData[0].name);
+    }
     return mentionsData;
   }
 
   toggleContent(index) {
     const mentions = this.state.mentions;
-	this.dummy(index, mentions[index].name )
+    this.getLinks(index, mentions[index].name);
     mentions[index].toggle = !mentions[index].toggle;
     this.setState({ mentions });
-	//this.getLinks(this.state.mentions[0].name)
-	console.log( "TOGGLE", mentions )
+    // this.getLinks(this.state.mentions[0].name)
   }
 
   render() {
@@ -264,32 +251,33 @@ export default class MentionsAndSentiments extends Component {
                                   key={item.name}
                                   show={item.toggle}
                                   onClickToggle={() => this.toggleContent(index)}
-								  footer={
-								    <div className="row">
+                                  footer={
+                                    <div className="row">
                                       <div className="second-stories--panel">
-                                      {   
-                                        this.state.data[index]
-                                        ?   
-                                        (   
-											this.state.data[index].results.map(item =>
-											(<SubStory
-											key={item.id}
-											title={item.title}
-											url={item.url}
-											host={item.host}
-											date={item.crawl_date}
-											label={item.enriched_text.sentiment.document.label}
-											score={item.enriched_text.sentiment.document.score}
-											/>))
-										)   
-										:   
-										(   
-										<div></div>
-										)   
-									}   
-									</div>
-									</div>
-								  }
+                                        {
+                                          this.state.data[index]
+                                            ?
+                                            (
+                                              this.state.data[index].results.map(item2 =>
+                                                (<SubStory
+                                                  key={item2.id}
+                                                  title={item2.title}
+                                                  url={item2.url}
+                                                  host={item2.host}
+                                                  date={item2.crawl_date}
+                                                  label={item2.enriched_text.sentiment.document.label}
+                                                  score={item2.enriched_text.sentiment.document.score}
+                                                />))
+                                            )
+                                            :
+                                            (
+                                              <div>.
+                                              </div>
+                                            )
+                                        }
+                                      </div>
+                                    </div>
+                                  }
                                   header={
                                     <div className="mentions-sentiments--data-row">
                                       <div className="mentions-sentiments--data-name">

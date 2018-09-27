@@ -65,7 +65,7 @@ export default class QueryExpanded extends Component {
             </p>
             <ul className="base--ul query--query-list">
               <li className="base--li query--query-list-item">Top stories over the last two months</li>
-              <li className="base--li query--query-list-item">Top entities (people, topics, companies) mentioned in those articles</li>
+              <li className="base--li query--query-list-item">Top entities (people, topics, organizations) mentioned in those articles</li>
               <li className="base--li query--query-list-item">Trend of public sentiment in news</li>
               <li className="base--li query--query-list-item">Anomalous periods of high press coverage</li>
               <li className="base--li query--query-list-item">Trend of most commonly paired entities (co-mentions)</li>

@@ -5,6 +5,7 @@ const returnFields = [
   fields.url,
   fields.host,
   fields.publication_date,
+  fields.score,
 ].join(',');
 
 module.exports = {

@@ -13,6 +13,7 @@ export function getItemsForName(resultList, name) {
   if (items.length > 0) {
     const target = items[0];
     const slices = target.aggregations[0].results.reduce((k, v) => {
+      // console.log( "SLICE", k, v )
       const sentiment =
           v.aggregations[0].results.reduce((sk, sv) => {
             const res = sk;

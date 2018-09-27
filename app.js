@@ -1,39 +1,37 @@
-const vcapServices = require('vcap_services');
+// const vcapServices = require('vcap_services');
 const queryBuilder = require('./src/query-builder');
 
 const NEWS_ENVIRONMENT_ID = 'system';
-const NEWS_COLLECTION_ID = 'news';
+const NEWS_COLLECTION_ID = 'news-ja';
 
 const DiscoveryV1 = require('watson-developer-cloud/discovery/v1');
 
 let creds;
-if ( process.env.VCAP_SERVICES ) {
-	const services = JSON.parse(process.env.VCAP_SERVICES);
-	console.log( services )
-	creds = services["discovery"][0]["credentials"]
+if (process.env.VCAP_SERVICES) {
+  const services = JSON.parse(process.env.VCAP_SERVICES);
+  creds = services.discovery[0].credentials;
+} else {
+  creds = {
+    username: null,
+    password: null,
+  };
 }
-else {
-	creds = {
-		username: null,
-		password: null,
-	}
-}
-console.log( creds )
 
+// const VERSION_DATE = '2017-08-01'
+const VERSION_DATE = '2018-08-01';
 let discovery;
-
 if (process.env.DISCOVERY_IAM_APIKEY && process.env.DISCOVERY_IAM_APIKEY !== '') {
   discovery = new DiscoveryV1({
-    version: '2017-08-01',
+    version: VERSION_DATE,
     iam_apikey: process.env.DISCOVERY_IAM_APIKEY || '<iam_apikey>',
     iam_url: process.env.DISCOVERY_IAM_URL || 'https://iam.bluemix.net/identity/token',
     url: process.env.DISCOVERY_URL || 'https://gateway.watsonplatform.net/discovery/api',
   });
 } else {
   discovery = new DiscoveryV1({
-    version: '2017-08-01',
-    username: creds["username"] || process.env.DISCOVERY_USERNAME || '<username>',
-    password: creds["password"] || process.env.DISCOVERY_PASSWORD || '<password>',
+    version: VERSION_DATE,
+    username: creds.username || process.env.DISCOVERY_USERNAME || '<username>',
+    password: creds.password || process.env.DISCOVERY_PASSWORD || '<password>',
     url: process.env.DISCOVERY_URL || 'https://gateway.watsonplatform.net/discovery/api',
   });
 }
@@ -52,23 +50,24 @@ function getWidgetQuery(request) {
     return null;
   }
 
-  return widgetQueries.split(',').reduce((widgetQuery, finalWidgetQuery) => {
-    const queryBuilderWidgetQuery = queryBuilder.widgetQueries[widgetQuery];
+  return widgetQueries.split(',')
+    .reduce((widgetQuery, finalWidgetQuery) => {
+      const queryBuilderWidgetQuery = queryBuilder.widgetQueries[widgetQuery];
 
-    if (queryBuilderWidgetQuery) {
-      const widgetAggregations = queryBuilderWidgetQuery.aggregations;
+      if (queryBuilderWidgetQuery) {
+        const widgetAggregations = queryBuilderWidgetQuery.aggregations;
 
-      if (widgetAggregations) {
-        const currentAggregations = finalWidgetQuery.aggregations || [];
-        delete queryBuilderWidgetQuery.aggregations;
+        if (widgetAggregations) {
+          const currentAggregations = finalWidgetQuery.aggregations || [];
+          delete queryBuilderWidgetQuery.aggregations;
 
-        return Object.assign({}, finalWidgetQuery, queryBuilderWidgetQuery, {
-          aggregations: currentAggregations.concat(widgetAggregations),
-        });
+          return Object.assign({}, finalWidgetQuery, queryBuilderWidgetQuery, {
+            aggregations: currentAggregations.concat(widgetAggregations),
+          });
+        }
       }
-    }
-    return Object.assign({}, finalWidgetQuery, queryBuilderWidgetQuery);
-  }, {});
+      return Object.assign({}, finalWidgetQuery, queryBuilderWidgetQuery);
+    }, {});
 }
 
 app.get('/', (req, res) => {
@@ -77,13 +76,14 @@ app.get('/', (req, res) => {
 
 // setup query endpoint for news
 app.post('/api/query', (req, res, next) => {
+  console.log('/api/query -------');
   const queryParams = queryBuilder.build(req.body, getWidgetQuery(req));
-  console.log( queryParams )
 
   if (queryParams.aggregations) {
     queryParams.aggregation = `[${queryParams.aggregations.join(',')}]`;
     delete queryParams.aggregations;
   }
+  console.log('PARAMS', queryParams);
 
   const params = Object.assign({}, queryParams, {
     environment_id: NEWS_ENVIRONMENT_ID,
@@ -94,18 +94,19 @@ app.post('/api/query', (req, res, next) => {
     if (error) {
       next(error);
     } else {
+      // Aconsole.log( response )
+      console.log('--------  QUERY');
       res.json(response);
     }
   });
 });
 
 app.post('/api/query2', (req, res, next) => {
-  
   const params = Object.assign({}, req.body, {
     environment_id: NEWS_ENVIRONMENT_ID,
     collection_id: NEWS_COLLECTION_ID,
   });
-  console.log( params )
+  console.log('PARAMS', params);
 
   discovery.query(params, (error, response) => {
     if (error) {

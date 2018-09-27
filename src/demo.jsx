@@ -47,8 +47,8 @@ const parseQueryResults = (data) => {
     if (aggregation.type === 'nested' && aggregation.path === fields.title_entity) {
       const entities = aggregation.aggregations;
       if (entities && entities.length > 0 && hasResults(entities[0])) {
-        if (entities[0].match === `${fields.title_entity_type}:Company`) {
-          parsedData.entities.companies = entities[0].aggregations[0].results;
+        if (entities[0].match === `${fields.title_entity_type}:Organization`) {
+          parsedData.entities.organizations = entities[0].aggregations[0].results;
         }
         if (entities[0].match === `${fields.title_entity_type}:Person`) {
           parsedData.entities.people = entities[0].aggregations[0].results;
@@ -80,7 +80,6 @@ export default class Demo extends Component {
    */
   fetchNewData = (query) => {
     this.setState({ query, loading: true, error: null, data: null });
-	console.log( query )
     const host = process.env.REACT_APP_SERVER || '';
     fetch(`${host}/api/query`, {
       method: 'POST',
@@ -89,7 +88,6 @@ export default class Demo extends Component {
     }).then((response) => {
       if (response.ok) {
         response.json().then((json) => {
-		console.log( "DEMO", json )
           this.setState({ loading: false, data: parseQueryResults(json) });
         });
       } else {

@@ -3,9 +3,7 @@ import moment from 'moment';
 import { string, number } from 'prop-types';
 
 function Story({ date, host, score, title, url }) {
-  console.log( date  )
-  return (
-    <div className="story">
+  return ( <div className="story">
       <div className="story--date">
         { moment(date).format('M/D/YYYY hh:MMa') }
       </div>

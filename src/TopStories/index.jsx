@@ -40,7 +40,6 @@ export default class TopStories extends Component {
 
   render() {
     const { stories, query } = this.props;
-
     return (
       <div>
         {
@@ -61,7 +60,7 @@ export default class TopStories extends Component {
                         url={item[fields.url]}
                         host={item[fields.host]}
                         date={item[fields.publication_date]}
-                        score={item.score}
+                        score={item['result_metadata']['score']}
                       />))
                   }
                 </div>

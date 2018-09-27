@@ -6,7 +6,7 @@ function SubStory({ date, host, score, title, label, url }) {
   return (
     <div className="substory">
       <div className="story--date">
-        { moment(date).format('M/D/YYYY hh:MMa') }
+        { moment(date).utc().format('M/D/YYYY hh:MMa') }
       </div>
       <a
         className="substory--title base--a results--a"
@@ -23,7 +23,7 @@ function SubStory({ date, host, score, title, label, url }) {
         </span>
         <span className="story--source-score-divider"> | </span>
         <span className="story--score base--p">
-		  <span>Label: { label }</span>
+          <span>Label: { label }</span>
         </span>
         <span className="story--source-score-divider"> | </span>
         <span className="story--score base--p">
